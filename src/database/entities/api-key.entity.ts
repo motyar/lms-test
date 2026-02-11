@@ -11,7 +11,6 @@ import { Client } from './client.entity';
 
 @Entity('api_keys')
 @Index(['key'])
-@Index(['clientId'])
 export class ApiKey {
   @PrimaryGeneratedColumn('uuid')
   id: string;

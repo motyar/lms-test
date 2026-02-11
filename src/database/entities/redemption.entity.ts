@@ -27,15 +27,12 @@ export class Redemption {
   id: string;
 
   @Column({ name: 'user_id' })
-  @Index()
   userId: string;
 
   @Column({ name: 'client_id' })
-  @Index()
   clientId: string;
 
   @Column({ name: 'campaign_id' })
-  @Index()
   campaignId: string;
 
   @Column({

@@ -17,7 +17,6 @@ import {
 import { Client } from './client.entity';
 
 @Entity('loyalty_rules')
-@Index(['clientId'])
 export class LoyaltyRule {
   @PrimaryGeneratedColumn('uuid')
   id: string;

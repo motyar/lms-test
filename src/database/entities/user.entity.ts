@@ -20,7 +20,6 @@ import { Redemption } from './redemption.entity';
 
 @Entity('users')
 @Index(['email'])
-@Index(['clientId'])
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;

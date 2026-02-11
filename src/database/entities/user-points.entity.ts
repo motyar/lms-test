@@ -17,11 +17,9 @@ export class UserPoints {
   id: string;
 
   @Column({ name: 'user_id' })
-  @Index()
   userId: string;
 
   @Column({ name: 'client_id' })
-  @Index()
   clientId: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })

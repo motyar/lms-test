@@ -60,7 +60,33 @@ CORS_ORIGIN=http://localhost:3000
 
 ## Installation
 
-### Option 1: Using Docker Compose (Recommended)
+### Quick Start (Recommended)
+
+We provide automated setup scripts that check dependencies and set up the project automatically:
+
+```bash
+# 1. Check system dependencies
+./check-deps.sh
+
+# 2. Run automated setup (installs dependencies, starts database, seeds data)
+./setup.sh
+
+# 3. Start the development server
+npm run start:dev
+```
+
+The `setup.sh` script will:
+- ✓ Check all required dependencies are installed
+- ✓ Create `.env` file from `.env.example`
+- ✓ Install npm dependencies
+- ✓ Start PostgreSQL via Docker Compose
+- ✓ Initialize database schema
+- ✓ Seed test data
+- ✓ Provide clear next steps
+
+### Manual Installation
+
+#### Option 1: Using Docker Compose
 
 ```bash
 # Install dependencies
@@ -79,7 +105,7 @@ npm run start:dev
 npm run seed
 ```
 
-### Option 2: Using Local PostgreSQL
+#### Option 2: Using Local PostgreSQL
 
 ```bash
 # Install dependencies
@@ -270,21 +296,99 @@ Key tables:
 
 ## Troubleshooting
 
+### Missing Dependencies
+
+If you encounter errors during setup:
+
+```bash
+# Run dependency checker to diagnose issues
+./check-deps.sh
+```
+
+Common issues and solutions:
+
+**Node.js not found or wrong version:**
+```bash
+# Install Node.js v18+ from https://nodejs.org/
+# Or use nvm:
+nvm install 18
+nvm use 18
+```
+
+**Docker not found:**
+```bash
+# Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install docker.io docker-compose-plugin
+
+# macOS
+brew install --cask docker
+
+# Or download from https://docs.docker.com/get-docker/
+```
+
+**Docker daemon not running:**
+```bash
+# Linux
+sudo systemctl start docker
+
+# macOS/Windows
+# Start Docker Desktop application
+```
+
+**npm install fails:**
+```bash
+# Clear cache and retry
+npm cache clean --force
+rm -rf node_modules package-lock.json
+npm install
+```
+
 ### Database Connection Issues
 ```bash
 # Check PostgreSQL is running
-pg_isready
+docker compose ps
 
-# Create database if missing
-createdb lms_db
+# View PostgreSQL logs
+docker compose logs postgres
+
+# Restart PostgreSQL
+docker compose restart postgres
 
 # Check connection settings in .env
+cat .env | grep DB_
 ```
 
 ### Port Already in Use
 ```bash
+# Check what's using port 3000
+lsof -i :3000
+
 # Change PORT in .env file
 PORT=3001
+
+# Or stop the conflicting process
+kill -9 <PID>
+```
+
+### Build Errors
+```bash
+# Clean build and rebuild
+rm -rf dist
+npm run build
+
+# Check TypeScript errors
+npx tsc --noEmit
+```
+
+### Permission Errors (Linux/macOS)
+```bash
+# Make scripts executable
+chmod +x check-deps.sh setup.sh
+
+# Fix Docker permission (Linux)
+sudo usermod -aG docker $USER
+# Log out and log back in
 ```
 
 ## Production Deployment

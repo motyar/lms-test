@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import {
   User,
   Client,
+  ApiKey,
   Campaign,
   LoyaltyRule,
   UserRole,
@@ -37,7 +38,7 @@ async function seed() {
     }
 
     // Create API key for client
-    const apiKeyRepo = dataSource.getRepository('api_keys');
+    const apiKeyRepo = dataSource.getRepository(ApiKey);
     const existingKey = await apiKeyRepo.findOne({
       where: { clientId: client.id },
     });

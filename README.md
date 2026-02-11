@@ -60,6 +60,27 @@ CORS_ORIGIN=http://localhost:3000
 
 ## Installation
 
+### Option 1: Using Docker Compose (Recommended)
+
+```bash
+# Install dependencies
+npm install
+
+# Start PostgreSQL using Docker Compose
+docker-compose up -d
+
+# Wait for PostgreSQL to be ready (about 10 seconds)
+sleep 10
+
+# Run the application (will auto-create tables in development mode)
+npm run start:dev
+
+# In a new terminal, seed the database with test data
+npm run seed
+```
+
+### Option 2: Using Local PostgreSQL
+
 ```bash
 # Install dependencies
 npm install

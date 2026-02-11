@@ -10,6 +10,8 @@ export const GetUser = createParamDecorator(
 export const GetClientId = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    return request.clientId;
+    // For API key auth, clientId is set directly on request
+    // For JWT auth, get it from the user object
+    return request.clientId || request.user?.clientId;
   },
 );

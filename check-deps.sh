@@ -53,6 +53,13 @@ check_port() {
     local port=$1
     local service=$2
     
+    # Check if port checking tools are available
+    if ! command -v lsof &> /dev/null && ! command -v nc &> /dev/null; then
+        echo -e "${YELLOW}⚠${NC} Cannot check port $port (lsof and nc not found) - assuming available"
+        WARNINGS=$((WARNINGS + 1))
+        return 0
+    fi
+    
     if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1 || nc -z localhost $port 2>/dev/null; then
         echo -e "${YELLOW}⚠${NC} Port $port is already in use (needed for $service)"
         WARNINGS=$((WARNINGS + 1))

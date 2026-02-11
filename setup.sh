@@ -58,6 +58,9 @@ wait_for_postgres() {
     return 1
 }
 
+# Configuration
+MAX_STARTUP_WAIT=45  # Maximum seconds to wait for application startup
+
 # Trap errors
 trap 'print_error "Setup failed at line $LINENO. Check the error message above."; exit 1' ERR
 
@@ -148,15 +151,18 @@ echo ""
 print_status "Step 8/8: Setting up database and seeding data..."
 print_status "Starting application to create database schema..."
 
+# Create logs directory if it doesn't exist
+mkdir -p logs
+
 # Start the application in background to create tables
-npm run start:dev > /tmp/lms-startup.log 2>&1 &
+npm run start:dev > logs/startup.log 2>&1 &
 APP_PID=$!
 
-print_status "Waiting for application to initialize database (this may take 30-45 seconds)..."
+print_status "Waiting for application to initialize database (this may take up to $MAX_STARTUP_WAIT seconds)..."
 
 # Wait for application to start and create tables
-for i in {1..45}; do
-    if grep -q "Nest application successfully started" /tmp/lms-startup.log 2>/dev/null; then
+for i in $(seq 1 $MAX_STARTUP_WAIT); do
+    if grep -q "Nest application successfully started" logs/startup.log 2>/dev/null; then
         print_success "Application started and database schema created"
         # Give it a moment to finish
         sleep 2
@@ -166,9 +172,9 @@ for i in {1..45}; do
         break
     fi
     
-    if grep -q "Error" /tmp/lms-startup.log 2>/dev/null; then
+    if grep -q "Error" logs/startup.log 2>/dev/null; then
         print_error "Application failed to start"
-        cat /tmp/lms-startup.log
+        cat logs/startup.log
         kill $APP_PID 2>/dev/null || true
         exit 1
     fi

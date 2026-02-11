@@ -104,10 +104,12 @@ echo ""
 # Step 4: Stop any existing Docker containers
 print_status "Step 4/8: Cleaning up existing Docker containers..."
 if command_exists docker; then
-    if docker compose ps | grep -q "lms-postgres"; then
-        print_status "Stopping existing containers..."
-        docker compose down
-        print_success "Existing containers stopped"
+    # Check if containers exist
+    if docker compose ps -a 2>/dev/null | grep -q "lms-postgres"; then
+        print_status "Stopping and removing existing containers and volumes..."
+        docker compose down -v
+        print_success "Existing containers and data volumes removed"
+        print_warning "Note: This creates a fresh database. Any existing data has been removed."
     else
         print_success "No existing containers to clean up"
     fi
@@ -144,29 +146,47 @@ echo ""
 
 # Step 8: Run database migrations and seed data
 print_status "Step 8/8: Setting up database and seeding data..."
-print_status "Starting application in development mode (this will create tables)..."
-print_warning "The application will start and create database tables automatically."
-print_warning "Once you see 'Nest application successfully started', you can:"
-print_warning "  1. Press Ctrl+C to stop the server"
-print_warning "  2. Then run: npm run seed"
-print_warning "  3. Finally run: npm run start:dev"
+print_status "Starting application to create database schema..."
+
+# Start the application in background to create tables
+npm run start:dev > /tmp/lms-startup.log 2>&1 &
+APP_PID=$!
+
+print_status "Waiting for application to initialize database (this may take 30-45 seconds)..."
+
+# Wait for application to start and create tables
+for i in {1..45}; do
+    if grep -q "Nest application successfully started" /tmp/lms-startup.log 2>/dev/null; then
+        print_success "Application started and database schema created"
+        # Give it a moment to finish
+        sleep 2
+        # Stop the application
+        kill $APP_PID 2>/dev/null || true
+        wait $APP_PID 2>/dev/null || true
+        break
+    fi
+    
+    if grep -q "Error" /tmp/lms-startup.log 2>/dev/null; then
+        print_error "Application failed to start"
+        cat /tmp/lms-startup.log
+        kill $APP_PID 2>/dev/null || true
+        exit 1
+    fi
+    
+    echo -n "."
+    sleep 1
+done
+
+echo ""
+print_success "Database schema initialized"
 echo ""
 
-# Start the application temporarily to create tables
-print_status "Starting application to initialize database schema..."
-timeout 30s npm run start:dev || true
-
-echo ""
-print_success "Application started briefly to create database schema"
-print_status "Now you can run the seed script..."
-echo ""
-
-# Try to run seed
-print_status "Running database seed..."
+# Now run seed
+print_status "Seeding database with test data..."
 if npm run seed; then
     print_success "Database seeded successfully"
 else
-    print_warning "Seeding failed or was skipped. You can run it manually later with: npm run seed"
+    print_warning "Seeding failed. You can run it manually later with: npm run seed"
 fi
 
 echo ""

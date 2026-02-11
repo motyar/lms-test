@@ -30,7 +30,6 @@ import { Client } from './client.entity';
 import { Redemption } from './redemption.entity';
 
 @Entity('campaigns')
-@Index(['clientId'])
 @Index(['status'])
 export class Campaign {
   @PrimaryGeneratedColumn('uuid')
